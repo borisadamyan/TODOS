@@ -1,3 +1,6 @@
+const _ = require('lodash');
+const should = require('chai').should();
+var expectChai = require('chai').expect;
 const request = require('supertest');
 const expect = require('expect');
 const {ObjectID} = require('mongodb');
@@ -11,7 +14,9 @@ const todos =[
     },
     {
         _id: new ObjectID(),
-        text: 'Second test'
+        text: 'Second test',
+        completed: true,
+        completedAt: 333
     }
 ]
 
@@ -114,7 +119,8 @@ describe('DELETE /todos/:id', () => {
                     return done(err);
                 }
                 Todo.findById(hexId).then((todo) => {
-                    expect(todo).toNotExist();
+                   // expect(todo).toNotExist();
+                    should.not.exist(todo);
                     done();
                 }).catch((e) => done(e))
             });
@@ -134,4 +140,47 @@ describe('DELETE /todos/:id', () => {
             .expect(404)
             .end(done);
     });
+});
+
+describe('PATCH /todos/:id', () =>{
+   it('should be update the todo', (done) => {
+       var hexId  = todos[0]._id.toHexString();
+       var text = 'Upbated text';
+
+       request(app)
+           .patch(`/todos/${hexId}`)
+           .send({
+               completed: true,
+               text
+           })
+           .expect(200)
+           .expect((res) => {
+           expect(res.body.todo.text).toBe(text);
+           expect(res.body.todo.completed).toBe(true);
+           expectChai(res.body.todo.completedAt).to.be.a('number');
+
+           })
+           .end(done)
+   });
+    it('should clear completedAt when todo is not complete', (done) => {
+        var hexId  = todos[1]._id.toHexString();
+        var text = 'Updated text !!';
+
+        request(app)
+            .patch(`/todos/${hexId}`)
+            .send({
+                completed: false,
+                text
+            })
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo.text).toBe(text);
+                expect(res.body.todo.completed).toBe(false);
+                //expect(res.body.todo.completedAt).toBeA('number');
+                //expectChai(res.body.todo.completedAt).to.be.a('number');
+                //expect(res.body.todo.completedAt).toNotExist();
+                should.not.exist(res.body.todo.completedAt);
+            })
+            .end(done)
+    })
 });
