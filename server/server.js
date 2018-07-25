@@ -120,6 +120,23 @@ app.patch('/todos/:id', (req, res) => {
 
 });
 
+
+app.post('/users', (req, res) => {
+    //console.log(req.body);
+    var body = _.pick(req.body, ['email','password']);
+    /*var user = new User({
+        email: body.email,
+        password: body.password
+    });*/
+    var user = new User(body);
+    user.save().then((doc) => {
+        res.send(doc);
+    }, (err) => {
+        res.status(400).send(err);
+    });
+});
+
+
 app.listen(port, ()=>{
     console.log(`Started on port ${port}`);
 });
