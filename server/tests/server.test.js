@@ -6,25 +6,11 @@ const expect = require('expect');
 const {ObjectID} = require('mongodb');
 const {app} = require('./../server');
 const {Todo} = require('./../models/todo');
+const {todos, populateTodos, populateUsers} = require('./seed/seed');
 
-const todos =[
-    {
-        _id: new ObjectID(),
-        text: 'First test'
-    },
-    {
-        _id: new ObjectID(),
-        text: 'Second test',
-        completed: true,
-        completedAt: 333
-    }
-]
 
-beforeEach((done) => {
-   Todo.remove({}).then(() => {
-       return Todo.insertMany(todos);
-   }).then(() => done());
-});
+beforeEach( populateUsers);
+beforeEach(populateTodos);
 
 describe('POST /todos', () => {
    it('should create a new todo', (done) => {
@@ -78,6 +64,7 @@ describe('GET /todos', () => {
             .end(done);
     })
 });
+
 describe('GET /todos/:id', () => {
     it('should get  todo by ID', (done) => {
         request(app)
@@ -105,6 +92,7 @@ describe('GET /todos/:id', () => {
             .end(done);
     });
 });
+
 describe('DELETE /todos/:id', () => {
     it('should remove a Todo', (done) => {
         var hexId = todos[1]._id.toHexString();
